@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Learn Chinese Characters</title>
+    <meta charset="utf-8">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="characters.js"></script>
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="content">
+      <h2 id="score">100.00%</h2>
+      <h2 id="level">Level 1</h2>
+      <h1 id="current-character"></h1>
+
+      <span style="width: 300px; display: block;">
+        <input id="pinyin-input" type="text">
+      </span>
+      
+      <span id="hint-span">
+        <button id="hint-button">Hint</button>
+        <span id="hint">?</span>
+      </span>
+      <br>
+      <button id="reset-button">Reset</button>
+      <br>
+      
+      <label>Level</label>
+      <select id="level-select">
+        <option value="1">100 Characters</option>
+        <option value="2">200 Characters</option>
+        <option value="3">300 Characters</option>
+        <option value="4">400 Characters</option>
+        <option value="5">500 Characters</option>
+        <option value="6">600 Characters</option>
+        <option value="7">700 Characters</option>
+        <option value="8">800 Characters</option>
+        <option value="9">900 Characters</option>
+        <option value="10">1000 Characters</option>
+        <option value="11">1100 Characters</option>
+        <option value="12">1200 Characters</option>
+        <option value="13">1300 Characters</option>
+        <option value="14">1400 Characters</option>
+        <option value="15">1500 Characters</option>
+        <option value="16">1600 Characters</option>
+        <option value="17">1700 Characters</option>
+        <option value="18">1800 Characters</option>
+        <option value="19">1900 Characters</option>
+        <option value="20">2000 Characters</option>
+        <option value="21">2100 Characters</option>
+        <option value="22">2200 Characters</option>
+        <option value="23">2300 Characters</option>
+        <option value="24">2400 Characters</option>
+        <option value="25">2500 Characters</option>
+        <option value="26">2600 Characters</option>
+        <option value="27">2700 Characters</option>
+        <option value="28">2800 Characters</option>
+        <option value="29">2900 Characters</option>
+        <option value="30">3000 Characters</option>
+        <option value="31">3100 Characters</option>
+        <option value="32">3200 Characters</option>
+        <option value="33">3300 Characters</option>
+        <option value="34">3400 Characters</option>
+        <option value="35">3500 Characters</option>
+        <option value="36">3600 Characters</option>
+        <option value="37">3700 Characters</option>
+        <option value="38">3800 Characters</option>
+        <option value="39">3900 Characters</option>
+        <option value="40">4000 Characters</option>
+        <option value="41">4100 Characters</option>
+        <option value="42">4200 Characters</option>
+        <option value="43">4300 Characters</option>
+        <option value="44">4400 Characters</option>
+        <option value="45">4500 Characters</option>
+        <option value="46">4600 Characters</option>
+        <option value="47">4700 Characters</option>
+        <option value="48">4800 Characters</option>
+        <option value="49">4900 Characters</option>
+        <option value="50">5000 Characters</option>
+      </select>
+      <br>
+
+      <label>Mode</label>
+      <select id="mode-select">
+        <option value="newchars">Level Characters Only</option>
+        <option value="allchars">All Characters Up To Level</option>
+      </select>
+      <p> <b>Tips:</b> This game uses numbered pinyin, so for instance you would write '你' as 'ni3'. Additionally, 'ü' is written with as 'v'.</p>
+    </div>
+  </body>
+</html>
+      

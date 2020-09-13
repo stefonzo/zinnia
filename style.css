@@ -1,0 +1,23 @@
+body {
+    text-align: center;
+    font-family: sans-serif;
+}
+
+#content
+{
+    max-width: 300px;
+    margin: auto;
+}
+
+#pinyin-input
+{
+    border: solid 2px #2af;
+}
+
+#current-character
+{
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 200px;
+}
+
