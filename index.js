@@ -9,12 +9,29 @@ let hintLevel = 0;
 let previousCharacters = [];
 let completed = false;
 let mode = "newchars";
-let totalChars = 100;
+
+const CHARS_PER_LEVEL = 20;
+
+let totalChars = CHARS_PER_LEVEL;
+
+function setupLevels()
+{
+    let levelSelect = $('#level-select');
+    let numLevels = Math.floor(characters.length/CHARS_PER_LEVEL);
+    for (let i=0; i<numLevels; i++) {
+        let levelString = `${(i+1) * CHARS_PER_LEVEL} Characters`;
+        levelSelect.append(
+            $('<option></option>')
+                .val(i+1)
+                .text(levelString));
+    }
+}
 
 function randomCharacter()
 {
-    let minVal = level * 100 - totalChars;
-    let maxVal = level * 100;
+    let minVal = level * CHARS_PER_LEVEL - totalChars;
+    let maxVal = level * CHARS_PER_LEVEL;
+    console.log(minVal, maxVal);
     let index = Math.floor(Math.random() * (maxVal-minVal)) + minVal;
     return characters[index];
 }
@@ -24,22 +41,23 @@ function reset()
     completed = false;
     level = Number($('#level-select').val());
     mode = $('#mode-select').val();
+    if (mode === 'allchars')
+        totalChars = level * CHARS_PER_LEVEL;
+    else
+        totalChars = CHARS_PER_LEVEL;
+
     $('#level').text(`Level ${level}`);
     totalGuesses = 0;
     totalCorrect = 0;
     previousCharacters = [];
     updateCharacter();
     updateScore();
-    
-    if (mode === 'allchars')
-        totalChars = level * 100;
-    else
-        totalChars = 100;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 $(document).ready(() => {
+    setupLevels();
     $('#level-select').val('1');
     $('#level-select').change(reset);
     $('#mode-select').change(reset);
