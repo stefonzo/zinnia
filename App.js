@@ -2,7 +2,7 @@ let state = {
    character: '你',
    pinyin: 'ni3',
 
-   guessHistory = [],
+   guessHistory: [],
    
    hintLevel: 0,
    
