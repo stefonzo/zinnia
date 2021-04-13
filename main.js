@@ -21,4 +21,7 @@ function render()
 }
 
 
-window.onload = render;
+window.onload = () => {
+   reset();
+   render();
+}

@@ -15,7 +15,7 @@ function StyleDropdown({ options, index, onChoose, defaultText })
       );
 
    return h(
-      'div.StyleDropdownContainer', {}
+      'div.StyleDropdownContainer', {},
       [
          h('button.StyleDropdownButton', {}, text),
 

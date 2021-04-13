@@ -58,6 +58,7 @@ body {
     border-style: solid;
     border-width: 2px;
     display: inline-block;
+    margin: 2px;
 }
 
 
@@ -84,12 +85,21 @@ body {
 
 .StyleDropdownButton
 {
+    color: black;
+    background-color: white;
     padding: 10px;
     border-radius: 8px;
     border-style: solid;
     border-width: 2px;
+    border-color: #2af;
     display: inline-block;
-    min-width: 100px;
+    min-width: 180px;
+    margin: 2px;
+}
+
+.StyleDropdownButton:hover
+{
+    background-color: #eee;
 }
 
 .StyleDropdownContainer
@@ -102,10 +112,10 @@ body {
 {
     display: none;
     position: absolute;
-    min-width: 160px;
+    min-width: 220px;
     max-height: 500%;
     z-index: -1;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 
 .StyleDropdownContent a

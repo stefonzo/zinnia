@@ -1,5 +1,31 @@
+const levels = [];
+const LEVEL_SIZE = 20;
+
+for (let i=0; (LEVEL_SIZE*i) < characters.length; i++) {
+   let start = (20*i) + 1;
+   let end = 20 * (i+1);
+   end = end > characters.length ? characters.length-1 : end;
+   
+   levels.push(`Level ${i+1} (${start} - ${end})`);
+}
+
+
+const gameModes = [
+   'Only Level Characters',
+   'Level + Previous Four Levels',
+   'All Characters up to Level',
+];
+
+const GAMEMODE_LEVEL_ONLY = 0;
+const GAMEMODE_PREV_LEVELS = 1;
+const GAMEMODE_ALL_TO_LEVEL = 2;
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 let state = {
-   level: 1,
+   level: 0,
+   gameMode: GAMEMODE_LEVEL_ONLY,
    
    levelCharacters: [],
    index: 0,
@@ -20,21 +46,17 @@ function setState(update)
 {
    for (const key in update)
       state[key] = update[key];
+
    render();
 }
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const opts = [
-   'Hello, world!',
-   'Goodbye, world!',
-   'What\'s up, doc?',
-];
-
 const App = function()
 {
    const {
+      level, gameMode,
       character, pinyin,
       hintLevel,
       inputValue, inputShaking
@@ -52,7 +74,6 @@ const App = function()
            }),
 
          h('br'),
-         h('br'),
 
          h(HintButton,
            {
@@ -61,10 +82,26 @@ const App = function()
               handleClick: () => setState({ hintLevel: hintLevel+1 }),
            }),
 
+         h('br'),
+
          h(StyleDropdown,
-           { options: opts,
-             index: -1,
-             defaultText: 'Dropdown',
+           { options: levels,
+             index: level,
+             defaultText: 'Select a Level',
+             onChoose: (index) => {
+                setState({ level: index });
+                reset();
+             },
+           }),
+
+         h(StyleDropdown,
+           { options: gameModes,
+             index: gameMode,
+             defaultText: 'Select a Game Mode',
+             onChoose: (index) => {
+                setState({ gameMode: index });
+                reset();
+             },
            }),
       ]
    );
@@ -117,3 +154,74 @@ function shakeInputBox()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+// fisher-yates shuffle
+function shuffledArray(arr)
+{
+   const shuffled = [...arr];
+   for (let i=arr.length-1; i>0; i--) {
+      const j = Math.floor(Math.random() * i);
+      let tmp = shuffled[j];
+      shuffled[j] = shuffled[i];
+      shuffled[i] = tmp;
+   }
+
+   return shuffled;
+}
+
+
+function buildLevel(level, levelSize, gameMode, characters)
+{
+   let start;
+   
+   switch (gameMode) {
+   case GAMEMODE_LEVEL_ONLY:
+      start = levelSize * level;
+      break;
+
+   case GAMEMODE_PREV_LEVELS:
+      start = levelSize * (level - 4);
+      break;
+
+   case GAMEMODE_ALL_TO_LEVEL:
+      start = 0;
+      break;
+
+   default:
+      start = 0;
+      break;
+   }
+
+   start = start < 0 ? 0 : start;
+   
+   let end = levelSize * (level + 1);
+
+   const levelCharacters = [];
+   for (let i=start; i<end; i++)
+      levelCharacters.push(characters[i]);
+
+   return shuffledArray(levelCharacters);
+}
+
+function reset() {
+   const { level, gameMode } = state;
+
+   const levelCharacters = buildLevel(level, LEVEL_SIZE, gameMode, characters);
+
+   const [character, pinyin] = levelCharacters[0];
+   
+   setState({
+      levelCharacters,
+      index: 0,
+      
+      character,
+      pinyin,
+      
+      guessHistory: [],
+      
+      hintLevel: 0,
+      
+      inputValue: undefined,
+      inputShaking: false,
+   });
+}
