@@ -1,4 +1,9 @@
 let state = {
+   level: 1,
+   
+   levelCharacters: [],
+   index: 0,
+   
    character: '你',
    pinyin: 'ni3',
 
@@ -10,10 +15,6 @@ let state = {
    inputShaking: false,
 };
 
-let internalState = {};
-
-const KEY_ENTER = 13;
-
 
 function setState(update)
 {
@@ -23,49 +24,13 @@ function setState(update)
 }
 
 
-const CurrentCharacter = function({character})
-{
-   return h(
-      'h1',
-      { onClick: () => setState({currentCharacter: '我'}) },
-      character
-   );
-}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-function shakeInputBox()
-{
-   setState({ inputShaking: true });
-   setTimeout(() => setState({ inputShaking: false }), 300);
-}
-
-function handleInputKeyDown(event)
-{
-   const KEY_ENTER = 13;
-   const { pinyin, inputValue } = state;
-      
-   if (event.keyCode === KEY_ENTER) {
-      if (inputValue === pinyin)
-         correctAnswer();
-      else
-         shakeInputBox();
-   }
-   else {
-      setTimeout(() => setState({
-         inputValue: event.target.value
-      }), 300);
-   }
-}
-
-
-function correctAnswer()
-{
-   setState({
-      inputValue: undefined,
-      hintLevel: 0,
-   });
-}
-
+const opts = [
+   'Hello, world!',
+   'Goodbye, world!',
+   'What\'s up, doc?',
+];
 
 const App = function()
 {
@@ -75,13 +40,10 @@ const App = function()
       inputValue, inputShaking
    } = state;
 
-   console.log(inputValue);
-   
    return h(
       'div', {},
       [
-         h(CurrentCharacter,
-           { character, }),
+         h('h1', {}, character),
          
          h(InputBox,
            { value: inputValue,
@@ -98,6 +60,60 @@ const App = function()
               hintLevel,
               handleClick: () => setState({ hintLevel: hintLevel+1 }),
            }),
-         ]
-      );
+
+         h(StyleDropdown,
+           { options: opts,
+             index: -1,
+             defaultText: 'Dropdown',
+           }),
+      ]
+   );
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function handleInputKeyDown(event)
+{
+   const KEY_ENTER = 13;
+      
+   if (event.keyCode === KEY_ENTER) {
+      makeGuess();
    }
+   else {
+      setTimeout(() => setState({
+         inputValue: event.target.value
+      }), 300);
+   }
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function makeGuess()
+{
+   const { inputValue, pinyin } = state;
+   
+   if (inputValue === pinyin)
+         correctAnswer();
+      else
+         shakeInputBox();
+}
+
+function correctAnswer()
+{
+   setState({
+      inputValue: undefined,
+      hintLevel: 0,
+   });
+}
+
+function shakeInputBox()
+{
+   setState({ inputShaking: true });
+   setTimeout(() => setState({ inputShaking: false }), 300);
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
