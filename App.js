@@ -26,6 +26,7 @@ const GAMEMODE_ALL_TO_LEVEL = 2;
 let state = {
    level: 0,
    gameMode: GAMEMODE_LEVEL_ONLY,
+   paused: false,
    
    levelCharacters: [],
    index: 0,
@@ -58,7 +59,7 @@ function setState(update)
 const App = function()
 {
    const {
-      levelCharacters,
+      levelCharacters, time,
       level, gameMode,
       character, pinyin,
       numGuesses, correctGuesses,      
@@ -74,7 +75,7 @@ const App = function()
              numCharacters: levelCharacters.length,
              guesses: numGuesses,
              correctGuesses,
-             time: 0,
+             time,
            }),
          
          h('h1', {}, character),
@@ -221,10 +222,19 @@ function reset() {
    const levelCharacters = buildLevel(level, LEVEL_SIZE, gameMode, characters);
 
    const [character, pinyin] = levelCharacters[0];
+
+   clearInterval(timeInterval);
+   timeInterval = setInterval(() => {
+      const { paused, time } = state;
+      if (!paused)
+         setState({ time: time+1 });
+   }, 1000);
    
    setState({
       levelCharacters,
       index: 0,
+      paused: false,
+      time: 0,
       
       character,
       pinyin,
@@ -243,10 +253,13 @@ function reset() {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+let timeInterval;
+
 function ScoreView({ level, numCharacters, guesses, correctGuesses, time })
 {
    const minutes = Math.floor(time/60);
-   const seconds = time % 60;
+   let seconds = time % 60;
+   seconds = seconds < 10 ? '0' + seconds : seconds;
 
 
    const levelName = `Level ${level + 1}`;
@@ -257,7 +270,7 @@ function ScoreView({ level, numCharacters, guesses, correctGuesses, time })
    return h(
       'div', {},
       [
-         h('h1', {}, levelName),
+         h('h1', {}, `${levelName} - ${minutes}:${seconds}`),
          h('h1', {}, score),
       ]
    );
