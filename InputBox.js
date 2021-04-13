@@ -10,6 +10,7 @@ function InputBox(props)
    return h(
       `input${className}`,
       {
+         id: 'pinyin-input',
          type: 'text',
          value: props.value,
          onKeyDown: handleKeyDown,
