@@ -34,6 +34,8 @@ let state = {
    pinyin: 'ni3',
 
    guessHistory: [],
+   numGuesses: 0,
+   correctGuesses: 0,
    
    hintLevel: 0,
    
@@ -56,8 +58,10 @@ function setState(update)
 const App = function()
 {
    const {
+      levelCharacters,
       level, gameMode,
       character, pinyin,
+      numGuesses, correctGuesses,      
       hintLevel,
       inputValue, inputShaking
    } = state;
@@ -65,6 +69,14 @@ const App = function()
    return h(
       'div', {},
       [
+         h(ScoreView,
+           { level: level,
+             numCharacters: levelCharacters.length,
+             guesses: numGuesses,
+             correctGuesses,
+             time: 0,
+           }),
+         
          h('h1', {}, character),
          
          h(InputBox,
@@ -218,10 +230,35 @@ function reset() {
       pinyin,
       
       guessHistory: [],
+      numGuesses: 0,
+      correctGuesses: 0,
       
       hintLevel: 0,
       
       inputValue: undefined,
       inputShaking: false,
    });
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function ScoreView({ level, numCharacters, guesses, correctGuesses, time })
+{
+   const minutes = Math.floor(time/60);
+   const seconds = time % 60;
+
+
+   const levelName = `Level ${level + 1}`;
+   const percentage =
+         guesses === 0 ? '100.0' : String(0.1 * Math.floor(1000 * correctGuesses / guesses));
+   const score = `${correctGuesses}/${numCharacters} (${percentage}%)`;
+
+   return h(
+      'div', {},
+      [
+         h('h1', {}, levelName),
+         h('h1', {}, score),
+      ]
+   );
 }
