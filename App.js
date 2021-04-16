@@ -2,12 +2,26 @@
 
 const h = Inferno.h;
 
+const linearArray = n => {
+      let array = [];
+      for (let i=0; i<n; i++)
+         array.push(i);
+      return array;
+   };
+
 const GlobalState = {};
+const CHARACTERS_PER_LEVEL = 20;
+const Constant = {
+   CHARACTERS: characters,
+   CHARACTERS_PER_LEVEL,
+   LEVEL_NAMES: linearArray(characters.length/CHARACTERS_PER_LEVEL)
+      .map(n => `Level ${n+1} (${(CHARACTERS_PER_LEVEL*n)+1}-${CHARACTERS_PER_LEVEL*(n+1)})`),
+};
 
 // IMPURE
 const updateState = (state, update) => Object.keys(update).forEach(
    key => {
-      if (typeof(state[key]) === 'object')
+      if (typeof(state[key]) === 'object' && !(Array.isArray(state[key])))
          updateState(state[key], update[key]);
       else
          state[key] = update[key];
@@ -39,6 +53,7 @@ const App = ({state}) => {
       setTimeout(() => setState({ guessInput: { isShaking: false } }), 300);
 
    if (currentLevel.oldTimer) {
+      // side-effect!!
       clearInterval(currentLevel.oldTimer);
       currentLevel.oldTimer = undefined;
       currentLevel.timer = setInterval(() => {
@@ -51,9 +66,17 @@ const App = ({state}) => {
    return h('div', {}, [
       h(Score, { gameParams, currentLevel }),
       h(Game, {
-         state,
          currentLevel,
          guessInput,
+         eventHandlers: {
+            handleInput: updateStateOnEvent(state, handleGuessInputInput),
+            handleKeyDown: updateStateOnEvent(state, handleGuessInputKeyDown),
+         },
+      }),
+      h(LevelSelect, {
+         gameParams,
+         handleInput: updateStateOnEvent(state, handleLevelInput),
+         handleFocusIn: updateStateOnEvent(state, handleLevelFocusIn),
       }),
    ]);
 };
@@ -88,11 +111,12 @@ const Score = ({ gameParams, currentLevel }) => {
 };
 
 
-const Game = ({ state, currentLevel, guessInput }) => {
+const Game = ({ currentLevel, guessInput, eventHandlers }) => {
    const { characters, index, running } = currentLevel;
+   const { handleInput, handleKeyDown } = eventHandlers
 
    if (!running)
-      return h('p', {}, 'Finished');
+      return h('p', {}, 'Done!');
    else {
       const [ character ] = characters[index];
 
@@ -101,8 +125,8 @@ const Game = ({ state, currentLevel, guessInput }) => {
          h(GuessInput, {
             value: guessInput.value,
             isShaking: guessInput.isShaking,
-            handleInput: updateStateOnEvent(state, handleGuessInputInput),
-            handleKeyDown: updateStateOnEvent(state, handleGuessInputKeyDown),
+            handleInput: handleInput,
+            handleKeyDown: handleKeyDown,
          }),
       ]);
    }
@@ -119,6 +143,25 @@ const GuessInput = ({value, isShaking, handleInput, handleKeyDown}) => {
       onKeyDown: handleKeyDown,
    });
 };
+
+
+const LevelSelect = ({ gameParams, handleInput, handleFocusIn }) => {
+   const { level } = gameParams;
+
+   const options = Constant.LEVEL_NAMES
+         .map((name, index) =>
+            h('option', {
+               value: index,
+            }, name)
+         );
+   
+   return h('span', {}, [
+      h('label', {}, 'Level: '),
+      h('select', {
+         onInput: handleInput,
+      }, options),
+   ]);
+}
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -176,6 +219,14 @@ const handleGuessInputKeyDown = (state, event) => {
 };
 
 
+const handleLevelInput = (state, event) => {
+   console.log(event.target.selectedIndex);
+   return reset(state, { level: event.target.selectedIndex });
+};
+
+const handleLevelFocusIn = (state, event) => ({ gameParams: { level: -1 } });
+
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  * Document load and game reset
@@ -221,11 +272,12 @@ const availableGameModes = (level, levelSize) => {
 
 
 const reset = (state, update) => {
+   const { level, gameMode } = state.gameParams;
    const { timer } = state.currentLevel;
    
-   const newLevel = 0;
-   const gameModes = availableGameModes(newLevel, 20);
-   const newGameMode = 0;
+   const newLevel = update.level !== undefined ? update.level : level;
+   const gameModes = availableGameModes(newLevel, Constant.CHARACTERS_PER_LEVEL);
+   const newGameMode = update.level !== undefined ? 0 : gameMode;
 
    // new level characters
    const shuffled = array => {
@@ -239,7 +291,7 @@ const reset = (state, update) => {
 
    const levelCharacters = gameMode => {
       const [start, end] = gameMode.range;
-      return shuffled(characters.slice(start, end));
+      return shuffled(Constant.CHARACTERS.slice(start, end)); // global (but constant) access
    };
 
    return {
@@ -267,7 +319,10 @@ const reset = (state, update) => {
 
 // IMPURE
 window.onload = () => {
-   const initialState = reset({ currentLevel: { timer: true }});
+   const initialState = reset({
+      gameParams: { level: 0, gameMode: 0 },
+      currentLevel: { timer: true }
+   }, {});
    setState(initialState);
 };
       
