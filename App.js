@@ -32,17 +32,30 @@ const setState = update => {
 
 // IMPURE
 const App = ({state}) => {
-   const { currentLevel, guessInput, } = state;
+   const { gameParams, currentLevel, guessInput, } = state;
 
    if (guessInput.isShaking)
       // side-effect!!
       setTimeout(() => setState({ guessInput: { isShaking: false } }), 300);
+
+   if (currentLevel.oldTimer) {
+      clearInterval(currentLevel.oldTimer);
+      currentLevel.oldTimer = undefined;
+      currentLevel.timer = setInterval(() => {
+         const { time, running } = GlobalState.currentLevel;
+         if (running)
+            setState({ currentLevel: { time: time+1 } });
+      }, 1000);
+   }
    
-   return h(Game, {
-      state,
-      currentLevel,
-      guessInput,
-   });
+   return h('div', {}, [
+      h(Score, { gameParams, currentLevel }),
+      h(Game, {
+         state,
+         currentLevel,
+         guessInput,
+      }),
+   ]);
 };
 
 
@@ -52,6 +65,28 @@ const App = ({state}) => {
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+
+const Score = ({ gameParams, currentLevel }) => {
+   const { level } = gameParams;
+   const {
+      characters,
+      correctGuesses,
+      totalGuesses,
+      time
+   } = currentLevel;
+   
+   const minutes = String(Math.floor(time/60));
+   const seconds = String(time % 60).padStart(2, '0');
+
+   const fractionCorrect = totalGuesses === 0 ? 1 : correctGuesses / totalGuesses;
+   const percentage = (100*fractionCorrect).toFixed(1) + '%';
+
+   return h('div', {}, [
+      h('h1', {}, `Level ${level+1} - ${minutes}:${seconds}`),
+      h('h1', {}, `${correctGuesses}/${characters.length} (${percentage})`),
+   ]);
+};
+
 
 const Game = ({ state, currentLevel, guessInput }) => {
    const { characters, index, running } = currentLevel;
@@ -186,6 +221,8 @@ const availableGameModes = (level, levelSize) => {
 
 
 const reset = (state, update) => {
+   const { timer } = state.currentLevel;
+   
    const newLevel = 0;
    const gameModes = availableGameModes(newLevel, 20);
    const newGameMode = 0;
@@ -217,6 +254,8 @@ const reset = (state, update) => {
          correctGuesses: 0,
          totalGuesses: 0,
          running: true,
+         time: 0,
+         oldTimer: timer,
       },
       guessInput: {
          value: '',
@@ -228,7 +267,7 @@ const reset = (state, update) => {
 
 // IMPURE
 window.onload = () => {
-   const initialState = reset();
+   const initialState = reset({ currentLevel: { timer: true }});
    setState(initialState);
 };
       
