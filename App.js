@@ -15,7 +15,7 @@ const Constant = {
    CHARACTERS: characters,
    CHARACTERS_PER_LEVEL,
    LEVEL_NAMES: linearArray(characters.length/CHARACTERS_PER_LEVEL)
-      .map(n => `Level ${n+1} (${(CHARACTERS_PER_LEVEL*n)+1}-${CHARACTERS_PER_LEVEL*(n+1)})`),
+      .map(n => `${n+1} (Characters ${(CHARACTERS_PER_LEVEL*n)+1}-${CHARACTERS_PER_LEVEL*(n+1)})`),
 };
 
 // IMPURE
@@ -76,7 +76,11 @@ const App = ({state}) => {
       h(LevelSelect, {
          gameParams,
          handleInput: updateStateOnEvent(state, handleLevelInput),
-         handleFocusIn: updateStateOnEvent(state, handleLevelFocusIn),
+      }),
+      h('br'),
+      h(ModeSelect, {
+         gameParams,
+         handleInput: updateStateOnEvent(state, handleModeInput),
       }),
    ]);
 };
@@ -148,15 +152,34 @@ const GuessInput = ({value, isShaking, handleInput, handleKeyDown}) => {
 const LevelSelect = ({ gameParams, handleInput, handleFocusIn }) => {
    const { level } = gameParams;
 
-   const options = Constant.LEVEL_NAMES
-         .map((name, index) =>
-            h('option', {
-               value: index,
-            }, name)
-         );
+   const options = Constant.LEVEL_NAMES.map(
+      (name, index) =>
+      h('option', {
+         value: index,
+      }, name)
+   );
    
    return h('span', {}, [
-      h('label', {}, 'Level: '),
+      h('label', {}, 'Level '),
+      h('select', {
+         onInput: handleInput,
+      }, options),
+   ]);
+}
+
+
+const ModeSelect = ({ gameParams, handleInput, handleFocusIn }) => {
+   const { gameMode, gameModes } = gameParams;
+
+   const options = gameModes.map(
+      (mode, index) =>
+      h('option', {
+         value: index,
+      }, mode.name)
+   );
+   
+   return h('span', {}, [
+      h('label', {}, 'Mode '),
       h('select', {
          onInput: handleInput,
       }, options),
@@ -224,7 +247,8 @@ const handleLevelInput = (state, event) => {
    return reset(state, { level: event.target.selectedIndex });
 };
 
-const handleLevelFocusIn = (state, event) => ({ gameParams: { level: -1 } });
+const handleModeInput = (state, event) => reset(state, { gameMode: event.target.selectedIndex });
+   
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
