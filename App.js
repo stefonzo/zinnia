@@ -71,13 +71,14 @@ const App = ({state}) => {
          eventHandlers: {
             handleInput: updateStateOnEvent(state, handleGuessInputInput),
             handleKeyDown: updateStateOnEvent(state, handleGuessInputKeyDown),
+            handlePlayAgainClick: updateStateOnEvent(state, handlePlayAgainClick),
+            handleHintButtonClick: updateStateOnEvent(state, handleHintButtonClick),
          },
       }),
       h(LevelSelect, {
          gameParams,
          handleInput: updateStateOnEvent(state, handleLevelInput),
       }),
-      h('br'),
       h(ModeSelect, {
          gameParams,
          handleInput: updateStateOnEvent(state, handleModeInput),
@@ -116,21 +117,34 @@ const Score = ({ gameParams, currentLevel }) => {
 
 
 const Game = ({ currentLevel, guessInput, eventHandlers }) => {
-   const { characters, index, running } = currentLevel;
-   const { handleInput, handleKeyDown } = eventHandlers
+   const { characters, index, hintLevel, running } = currentLevel;
+   const {
+      handleInput,
+      handleKeyDown,
+      handlePlayAgainClick,
+      handleHintButtonClick,
+   } = eventHandlers
 
    if (!running)
-      return h('p', {}, 'Done!');
+      return h('div', {}, [
+         h('p', {}, 'Done!'),
+         h('p', {}, h('button', { onClick: handlePlayAgainClick }, 'Play Again')),
+      ]);
    else {
-      const [ character ] = characters[index];
+      const [ character, pinyin ] = characters[index];
 
       return h('div', {}, [
-         h('p', {}, character),
+         h('p#current-character', {}, character),
          h(GuessInput, {
             value: guessInput.value,
             isShaking: guessInput.isShaking,
             handleInput: handleInput,
             handleKeyDown: handleKeyDown,
+         }),
+         h(HintButton, {
+            answer: pinyin,
+            hintLevel,
+            handleClick: handleHintButtonClick,
          }),
       ]);
    }
@@ -149,6 +163,22 @@ const GuessInput = ({value, isShaking, handleInput, handleKeyDown}) => {
 };
 
 
+const HintButton = ({ answer, hintLevel, handleClick }) => {
+   const getHint = (answer, hintLevel) => {
+      if (hintLevel === 0)
+         return 'Reveal Hint';
+      else if (hintLevel > 3)
+         return answer;
+      else
+         return answer.slice(0, hintLevel).padEnd(answer.length, '*');
+   }
+
+   const hint = getHint(answer, hintLevel);
+
+   return h('p', {}, h('button', { onClick: handleClick }, hint));
+}
+
+
 const LevelSelect = ({ gameParams, handleInput, handleFocusIn }) => {
    const { level } = gameParams;
 
@@ -159,7 +189,7 @@ const LevelSelect = ({ gameParams, handleInput, handleFocusIn }) => {
       }, name)
    );
    
-   return h('span', {}, [
+   return h('p', {}, [
       h('label', {}, 'Level '),
       h('select', {
          onInput: handleInput,
@@ -178,7 +208,7 @@ const ModeSelect = ({ gameParams, handleInput, handleFocusIn }) => {
       }, mode.name)
    );
    
-   return h('span', {}, [
+   return h('p', {}, [
       h('label', {}, 'Mode '),
       h('select', {
          onInput: handleInput,
@@ -221,6 +251,7 @@ const handleGuessInputKeyDown = (state, event) => {
             },
             currentLevel: {
                index: index + 1,
+               hintLevel: 0,
                correctGuesses: correctGuesses + 1,
                totalGuesses: totalGuesses + 1,
                running: (index + 1) < characters.length,
@@ -241,11 +272,24 @@ const handleGuessInputKeyDown = (state, event) => {
       return {};
 };
 
+const handlePlayAgainClick = (state, event) => reset(state, {});
 
-const handleLevelInput = (state, event) => {
-   console.log(event.target.selectedIndex);
-   return reset(state, { level: event.target.selectedIndex });
-};
+const handleHintButtonClick = (state, event) => {
+   const { hintLevel, totalGuesses } = state.currentLevel;
+
+   if (hintLevel < 4)
+      return {
+         currentLevel: {
+            totalGuesses: totalGuesses + 1,
+            hintLevel: hintLevel + 1,
+         }
+      }
+   else
+      return {}
+}
+
+
+const handleLevelInput = (state, event) => reset(state, { level: event.target.selectedIndex });
 
 const handleModeInput = (state, event) => reset(state, { gameMode: event.target.selectedIndex });
    
@@ -301,7 +345,8 @@ const reset = (state, update) => {
    
    const newLevel = update.level !== undefined ? update.level : level;
    const gameModes = availableGameModes(newLevel, Constant.CHARACTERS_PER_LEVEL);
-   const newGameMode = update.level !== undefined ? 0 : gameMode;
+   const newGameMode = update.level !== undefined ? 0 :
+         update.gameMode !== undefined ? update.gameMode : gameMode;
 
    // new level characters
    const shuffled = array => {
@@ -327,6 +372,7 @@ const reset = (state, update) => {
       currentLevel: {
          characters: levelCharacters(gameModes[newGameMode]),
          index: 0,
+         hintLevel: 0,
          correctGuesses: 0,
          totalGuesses: 0,
          running: true,
