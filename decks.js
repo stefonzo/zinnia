@@ -1,17 +1,6 @@
 let decks = [
-  { name: 'Basic Set'
+  { name: 'Chapter 11'
   , pairs: [
-    [ 'hello', 'world' ],
-  ]},
-  { name: 'Medium Set'
-  , pairs: [
-    [ 'greetings', 'world' ],
-    [ 'bonjour', 'world' ],
-  ]},
-  { name: 'Advanced Set'
-  , pairs: [
-    [ 'salutations', 'world' ],
-    [ 'aloha', 'world' ],
-    [ 'zuzu', 'world' ],
+    [ `genetic material that provides the blueprint to produce an individual's traits`, 'DNA' ],
   ]},
 ];
