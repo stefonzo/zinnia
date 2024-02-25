@@ -12,10 +12,8 @@ const linearArray = n => {
 const GlobalState = {};
 const CHARACTERS_PER_LEVEL = 20;
 const Constant = {
-   CHARACTERS: characters,
+   DECKS: decks,
    CHARACTERS_PER_LEVEL,
-   LEVEL_NAMES: linearArray(characters.length/CHARACTERS_PER_LEVEL)
-      .map(n => `${n+1} (Characters ${(CHARACTERS_PER_LEVEL*n)+1}-${CHARACTERS_PER_LEVEL*(n+1)})`),
 };
 
 // IMPURE
@@ -131,10 +129,10 @@ const Game = ({ currentLevel, guessInput, eventHandlers }) => {
          h('p', {}, h('button', { onClick: handlePlayAgainClick }, 'Play Again')),
       ]);
    else {
-      const [ character, pinyin ] = characters[index];
+      const [ show, expect ] = characters[index];
 
       return h('div', {}, [
-         h('p#current-character', {}, character),
+         h('p#current-character', {}, show),
          h(GuessInput, {
             value: guessInput.value,
             isShaking: guessInput.isShaking,
@@ -142,7 +140,7 @@ const Game = ({ currentLevel, guessInput, eventHandlers }) => {
             handleKeyDown: handleKeyDown,
          }),
          h(HintButton, {
-            answer: pinyin,
+            answer: expect,
             hintLevel,
             handleClick: handleHintButtonClick,
          }),
@@ -182,11 +180,11 @@ const HintButton = ({ answer, hintLevel, handleClick }) => {
 const LevelSelect = ({ gameParams, handleInput, handleFocusIn }) => {
    const { level } = gameParams;
 
-   const options = Constant.LEVEL_NAMES.map(
-      (name, index) =>
+   const options = Constant.DECKS.map(
+      (deck, index) =>
       h('option', {
          value: index,
-      }, name)
+      }, `${index+1}: ${deck.name}`)
    );
    
    return h('p', {}, [
@@ -305,36 +303,30 @@ const handleModeInput = (state, event) => reset(state, { gameMode: event.target.
 const availableGameModes = (level, levelSize) => {
    const clampNonNeg = value => value < 0 ? 0 : value;
 
-   const startLevels = [...new Set([
-      clampNonNeg(level),
-      clampNonNeg(level-3),
-      clampNonNeg(level-7),
-      clampNonNeg(level-12),
-      clampNonNeg(0),
-   ])];
+   const startLevels = [...Constant.DECKS.slice(0, level+1).keys()];
    
    const modeName = range => {
       const [start, end] = range;
       
       if (start === end)
-         return `Characters from level ${start+1}`;
+         return `Deck ${start+1}`;
       else if (start === 0)
-         return `Characters from levels 1-${end+1}`;
+         return `Decks 1-${end+1}`;
       else
-         return `Characters from levels ${start+1}-${end+1}`;
+         return `Decks ${start+1}-${end+1}`;
    }
 
    const mode = startLevel => {
-      const levelRange = [startLevel, level];
-      const range = levelRange.map((x, i) => levelSize * (x+i));
+      const range = [startLevel, level];
 
       return {
-         name: modeName(levelRange),
+         name: modeName(range),
          range,
       };
    };
 
    const modes = startLevels.map(mode);
+   console.log(modes);
    return modes;
 };
 
@@ -360,7 +352,12 @@ const reset = (state, update) => {
 
    const levelCharacters = gameMode => {
       const [start, end] = gameMode.range;
-      return shuffled(Constant.CHARACTERS.slice(start, end)); // global (but constant) access
+      const cards = Constant.DECKS
+        .slice(start, end+1)
+        .map(d => d.pairs)
+        .flat();
+      console.log(cards);
+      return shuffled(cards);
    };
 
    return {
