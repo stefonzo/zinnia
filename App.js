@@ -325,7 +325,7 @@ const availableGameModes = (level, levelSize) => {
       };
    };
 
-   const modes = startLevels.map(mode);
+   const modes = startLevels.toReversed().map(mode);
    console.log(modes);
    return modes;
 };
